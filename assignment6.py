@@ -69,7 +69,7 @@ for d_param in distance_parameters:
     plt.show()
 
 # part (ii)
-#Part A
+#Part A + C
 distance_parameters = [0, 1, 5, 10, 25]
 kf = KFold(n_splits = 5)
 mean_values_KNeighbors = []
@@ -113,7 +113,27 @@ plt.xlabel("gamma Values")
 plt.ylabel("Average of Mean Squared Errors")
 plt.show()
 
-# part B
+#part B
+predictions_KernelRidge0 = []
+distance_parameters = [0, 1, 5, 10, 25]
+for d_param in distance_parameters:
+    new_model = KernelRidge(alpha=1.0, kernel='rbf', gamma=d_param).fit(X, y)
+    ypred_new = new_model.predict(X_range)
+    predictions_KernelRidge0.append(ypred_new)
+
+plt.figure()
+plt.title("KernalRidge predictions over real data for various Y values".format(d_param))
+plt.xlabel("input x"); plt.ylabel("predicted output y")
+plt.scatter(X, y, color='red', marker='+', label="datapoint")
+col_and_label = [["orange", "γ=0"], ["green", "γ=1"], ["black", "γ=5"], ["blue", "γ=10"], ["purple", "γ=25"]]
+i = 0
+for ypred in predictions_KernelRidge0:
+    plt.plot(X_range, predictions_KernelRidge0[i], color=col_and_label[i][0], label=col_and_label[i][1] )
+    i = i + 1
+plt.legend()
+plt.show()
+
+# part C
 distance_parameters = [0, 1, 5, 10, 25]
 C_values = [0.1, 1, 10, 100, 1000]
 
