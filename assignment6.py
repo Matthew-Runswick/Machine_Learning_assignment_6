@@ -56,64 +56,103 @@ X_range = X_range.reshape(-1,1)
 #     plt.show()
 
 # #part (ii)
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2) *************(potentially need to use, talk to others)*****************
 
+# #Part A
+# distance_parameters = [0, 1, 5, 10, 25, 50]
+# kf = KFold(n_splits = 5)
+# mean_values_KNeighbors = []
+# standard_deviation_values_KNeighbors =[]
+# predictions_KNeighbors = []
 
-#Part A
-distance_parameters = [0, 1, 5, 10, 25, 50]
-kf = KFold(n_splits = 5)
-mean_values_KNeighbors = []
-standard_deviation_values_KNeighbors =[]
+# for d_param in distance_parameters:
+#     new_estimates = []
+#     for train, test, in kf.split(X):
+#         def gaussian_kernel(distances):
+#             weights = np.exp(-d_param*(distances**2))
+#             return weights/np.sum(weights)
 
-for d_param in distance_parameters:
-    new_estimates = []
-    for train, test, in kf.split(X): #**********************never use the test set as am testing over a X_range****************************
-        def gaussian_kernel(distances):
-            weights = np.exp(-d_param*(distances**2))
-            return weights/np.sum(weights)
+#         new_model = KNeighborsRegressor(n_neighbors=len(train),weights=gaussian_kernel).fit(X[train], y[train])
+#         test_pred = new_model.predict(X[test])
+#         new_estimates.append(mean_squared_error(test_pred, y[test]))
 
-        new_model = KNeighborsRegressor(n_neighbors=len(train),weights=gaussian_kernel).fit(X[train], y[train])
-        test_pred = new_model.predict(X[test])
-        new_estimates.append(mean_squared_error(test_pred, y[test]))
+#     predictions_KNeighbors.append(new_model.predict(X_range))
 
-    ypred = new_model.predict(X_range)
-    plt.figure()
-    plt.title("γ={} - predictions".format(d_param))
-    plt.xlabel("input x"); plt.ylabel("predicted output y")
-    plt.scatter(X, y, color='red', marker='+')
-    plt.plot(X_range, ypred, color='green', )
-    plt.show()
+#     mean = sum(new_estimates)/6
+#     standard_deviation = statistics.stdev(new_estimates)
+#     mean_values_KNeighbors.append(mean)
+#     standard_deviation_values_KNeighbors.append(standard_deviation)
 
-    mean = sum(new_estimates)/6
-    standard_deviation = statistics.stdev(new_estimates)
-    mean_values_KNeighbors.append(mean)
-    standard_deviation_values_KNeighbors.append(standard_deviation)
+# plt.figure()
+# plt.title("predictions over real data for various γ values")
+# plt.xlabel("input x"); plt.ylabel("predicted output y")
+# plt.scatter(X, y, color='red', marker='+')
+# col_and_label = [["red", "γ=0"], ["green", "γ=1"], ["black", "γ=5"], ["blue", "γ=10"], ["yellow", "γ=25"], ["cyan", "γ=50"]]
+# i = 0
+# for ypred in predictions_KNeighbors:
+#     plt.plot(X_range, ypred, color=col_and_label[i][0], label=col_and_label[i][1] )
+#     i = i + 1
+# plt.legend()
+# plt.show()
 
 # print("mean values", mean_values_KNeighbors)
 # print("standard deviation values", standard_deviation_values_KNeighbors)
-fig = plt.figure()
-plt.title("Lasso - C Value vs Average Mean Squared Errors With Standard Deviation")
-plt.errorbar(distance_parameters, mean_values_KNeighbors, yerr=standard_deviation_values_KNeighbors)
-plt.xlabel("gamma Values")
-plt.ylabel("Average of Mean Squared Errors")
-plt.show()
+# fig = plt.figure()
+# plt.title("γ Value vs Average Mean Squared Errors With Standard Deviation")
+# plt.errorbar(distance_parameters, mean_values_KNeighbors, yerr=standard_deviation_values_KNeighbors)
+# plt.xlabel("gamma Values")
+# plt.ylabel("Average of Mean Squared Errors")
+# plt.show()
 
-#part B
-# C_values = [0.1, 1, 10, 100, 1000]
-# distance_parameters = [0, 1, 5, 10, 25] # wont accept a value of 0
+# part B
+distance_parameters = [0, 1, 5, 10, 25] # wont accept a value of 0
+C_values = [0.1, 1, 10, 100, 1000]
 
-# for d_param in distance_parameters:
-#     for C in C_values:
-#         new_model = KernelRidge(alpha=1.0/C, kernel='rbf', gamma=d_param).fit(X, y)
-#         ypred_new = new_model.predict(X_range)
-#         plt.figure()
-#         plt.plot(X_range, ypred_new, color='green')
-#         plt.xlabel("input x"); plt.ylabel("predicted output y")
-#         plt.scatter(X, y, color='red', marker='+')
-#         plt.title("γ={} C={} - predictions".format(d_param, C))
+for d_param in distance_parameters:
+    kf = KFold(n_splits = 5)
+    mean_values_KernelRidge = []
+    standard_deviation_values_KernelRidge =[]
+    predictions_KernelRidge = []
+    for C in C_values:
+        new_estimates = []
+        for train, test, in kf.split(X):
+            new_model = KernelRidge(alpha=1.0/C, kernel='rbf', gamma=d_param).fit(X[train], y[train])
+            ypred_new = new_model.predict(X_range)
+            test_pred = new_model.predict(X[test])
+            new_estimates.append(mean_squared_error(test_pred, y[test]))
 
-#     plt.show()
+        predictions_KernelRidge.append(new_model.predict(X_range))
+
+        mean = sum(new_estimates)/5
+        standard_deviation = statistics.stdev(new_estimates)
+        mean_values_KernelRidge.append(mean)
+        standard_deviation_values_KernelRidge.append(standard_deviation)
+
+    plt.figure()
+    plt.title("predictions over real data for various C values for γ={}".format(d_param))
+    plt.xlabel("input x"); plt.ylabel("predicted output y")
+    plt.scatter(X, y, color='red', marker='+')
+    col_and_label = [["red", "C=0.1"], ["green", "C=1"], ["black", "C=10"], ["blue", "C=100"], ["yellow", "C=1000"]]
+    i = 0
+    for ypred in predictions_KernelRidge:
+        plt.plot(X_range, ypred, color=col_and_label[i][0], label=col_and_label[i][1] )
+        i = i + 1
+    plt.legend()
+    plt.show()
+
+    # print("mean values", mean_values_KernelRidge)
+    # print("standard deviation values", standard_deviation_values_KernelRidge)
+    fig = plt.figure()
+    plt.title("C Value vs Average Mean Squared Errors With Standard Deviation")
+    plt.errorbar(C_values, mean_values_KernelRidge, yerr=standard_deviation_values_KernelRidge)
+    plt.xscale("log")
+    plt.xlabel("gamma Values");plt.ylabel("Average of Mean Squared Errors")
+    plt.show()
 
 
-# use for part A and B above kf = KFold(n_splits = 5)
-# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2) (potentially need to use, talk to others)
-#merge graphs for easier comparisons between C values
+
+#questions for dave
+#do u split data 20/80 test/training
+#calculating error over real values not over full X_range (-3, 3)
+#do u check every gamma value for every C value 5 times (a lot of graphs)
+#do u do kfold for both the C values and the gamma values?
