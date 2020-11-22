@@ -174,3 +174,23 @@ for d_param in distance_parameters:
     plt.xscale("log")
     plt.xlabel("C Values");plt.ylabel("Average of Mean Squared Errors")
     plt.show()
+
+#KNN y=25
+def gaussian_kernel(distances):
+    weights = np.exp(-25*(distances**2))
+    return weights/np.sum(weights)
+KNN_model = KNeighborsRegressor(n_neighbors=len(X),weights=gaussian_kernel).fit(X, y)
+KNN_pred = KNN_model.predict(X_range)
+
+#Ridge y=1 C=10
+kernalRidge_model = KernelRidge(alpha=1.0/10, kernel='rbf', gamma=1).fit(X, y)
+kernalRidge_pred = kernalRidge_model.predict(X_range)
+
+plt.figure()
+plt.title("Kernal Ridge γ=1 C=10 vs KNN γ=25 predictions")
+plt.xlabel("input x"); plt.ylabel("predicted output y")
+plt.scatter(X, y, color='red', marker='+', label="datapoint")
+plt.plot(X_range, KNN_pred, color="red", label="KNN")
+plt.plot(X_range, kernalRidge_pred, color="green", label="Kernal Ridge")
+plt.legend()
+plt.show()
